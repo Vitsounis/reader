@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>The Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --ink:#1a1714;--ink2:#4a4743;--ink3:#8a8783;
+  --paper:#faf9f7;--paper2:#f2f0ec;--paper3:#e8e5df;
+  --accent:#b5451b;--accent2:#1b4b8a;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'DM Sans','Helvetica Neue',sans-serif;
+  --touch:48px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html{background:var(--paper);}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);min-height:100vh;padding:0 16px;padding-top:calc(var(--safe-top) + 8px);padding-bottom:calc(var(--safe-bottom) + 24px);}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+a{color:var(--accent2);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+.masthead{padding:1.25rem 0 0;text-align:center;border-bottom:3px double var(--paper3);}
+.masthead-eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:.4rem;}
+.masthead-title{font-family:var(--serif);font-size:clamp(36px,9vw,52px);font-weight:700;line-height:1;letter-spacing:-.02em;}
+.masthead-title span{font-style:italic;font-weight:400;}
+.masthead-meta{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;margin:.75rem 0 0;font-size:10px;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase;border-top:0.5px solid var(--paper3);border-bottom:0.5px solid var(--paper3);padding:.45rem 0;}
+.masthead-meta span{padding:0 8px;}
+.masthead-meta .sep{color:var(--paper3);}
+
+.toolbar{padding:.75rem 0;border-bottom:0.5px solid var(--paper3);margin-bottom:1rem;}
+.add-row{display:flex;gap:8px;margin-bottom:10px;}
+.tb-input{flex:1;min-width:0;height:var(--touch);padding:0 14px;font-family:var(--sans);font-size:16px;border:0.5px solid var(--paper3);background:var(--paper2);color:var(--ink);border-radius:8px;outline:none;-webkit-appearance:none;}
+.tb-input:focus{border-color:var(--ink3);background:white;}
+.add-btn{height:var(--touch);width:var(--touch);font-size:20px;cursor:pointer;border-radius:8px;background:var(--ink);color:var(--paper);border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.add-btn:active{opacity:.8;}
+.filter-row{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;align-items:center;}
+.filter-row::-webkit-scrollbar{display:none;}
+.fb{height:34px;padding:0 16px;font-family:var(--sans);font-size:13px;cursor:pointer;border-radius:100px;white-space:nowrap;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);-webkit-appearance:none;flex-shrink:0;}
+.fb.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.search-wrap{margin-left:auto;position:relative;flex-shrink:0;}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3);pointer-events:none;}
+.search-input{height:34px;padding:0 10px 0 30px;font-family:var(--sans);font-size:14px;border:0.5px solid var(--paper3);background:var(--paper2);color:var(--ink);border-radius:100px;outline:none;-webkit-appearance:none;width:100px;}
+.search-input:focus{width:130px;border-color:var(--ink3);}
+
+.connect-banner{display:flex;align-items:center;gap:10px;background:var(--paper2);border:0.5px solid var(--paper3);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--ink2);flex-wrap:wrap;gap:8px;}
+.connect-banner strong{color:var(--ink);}
+.cb-btn{height:32px;padding:0 14px;font-family:var(--sans);font-size:12px;cursor:pointer;border-radius:100px;border:none;background:var(--ink);color:var(--paper);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;-webkit-appearance:none;margin-left:auto;}
+.cb-btn:active{opacity:.8;}
+
+.section-rule{display:flex;align-items:center;gap:10px;margin:1.25rem 0 .875rem;}
+.section-rule-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;}
+.section-rule-line{flex:1;height:0.5px;background:var(--paper3);}
+
+/* ── Magazine grid ────────────────────────── */
+/* Top story: large left image + stacked right column */
+.mg-top{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:0.5px solid var(--paper3);margin-bottom:0;}
+.mg-top-img{aspect-ratio:4/3;overflow:hidden;background:var(--paper2);border-radius:6px;cursor:pointer;}
+.mg-top-img img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .15s;}
+.mg-top-img:active img{opacity:.85;}
+.mg-top-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.mg-top-ph i{font-size:24px;color:var(--paper3);}
+.mg-top-ph span{font-size:9px;color:var(--paper3);letter-spacing:.06em;text-transform:uppercase;}
+.mg-top-info{padding:.75rem .75rem .75rem .875rem;display:flex;flex-direction:column;justify-content:space-between;border-left:0.5px solid var(--paper3);}
+.mg-top-tag{font-size:9px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:.4rem;}
+.mg-top-title{font-family:var(--serif);font-size:clamp(15px,3.5vw,18px);line-height:1.3;font-weight:700;color:var(--ink);cursor:pointer;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.mg-top-title:active{color:var(--accent);}
+.mg-top-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.625rem;}
+.mg-top-domain{font-size:10px;color:var(--ink3);display:flex;align-items:center;gap:3px;}
+.mg-top-domain img{width:12px;height:12px;border-radius:2px;}
+
+/* 2-col grid row */
+.mg-row2{display:grid;grid-template-columns:1fr 1fr;border-bottom:0.5px solid var(--paper3);}
+.mg-cell2{padding:.875rem 0;display:flex;flex-direction:column;}
+.mg-cell2:first-child{padding-right:.75rem;border-right:0.5px solid var(--paper3);}
+.mg-cell2:last-child{padding-left:.75rem;}
+.mg-cell-img{width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--paper2);border-radius:4px;margin-bottom:.625rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mg-cell-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.mg-cell-img:active{opacity:.85;}
+.mg-cell-ph i{font-size:18px;color:var(--paper3);}
+.mg-cell-tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3rem;}
+.mg-cell-title{font-family:var(--serif);font-size:13px;line-height:1.35;font-weight:700;color:var(--ink);cursor:pointer;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.mg-cell-title:active{color:var(--accent);}
+.mg-cell-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;}
+.mg-cell-domain{font-size:9px;color:var(--ink3);}
+
+/* List rows for the rest */
+.card-list{display:flex;flex-direction:column;}
+.article-card{display:flex;gap:12px;padding:.875rem 0;border-top:0.5px solid var(--paper3);align-items:flex-start;}
+.ac-thumb{width:68px;height:54px;border-radius:4px;flex-shrink:0;background:var(--paper2);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.ac-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.ac-thumb i{font-size:18px;color:var(--paper3);}
+.ac-body{flex:1;min-width:0;}
+.ac-tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.2rem;}
+.ac-title{font-family:var(--serif);font-size:14px;line-height:1.35;font-weight:700;color:var(--ink);cursor:pointer;margin-bottom:.2rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ac-title:active{color:var(--accent);}
+.ac-domain{font-size:10px;color:var(--ink3);}
+.ac-actions{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.domain-chip{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:4px;}
+.domain-chip img{width:14px;height:14px;border-radius:2px;}
+
+.card-pill{display:inline-flex;align-items:center;font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+.pill-unread{background:var(--paper2);color:var(--ink3);}
+.pill-reading{background:#E6F1FB;color:#0C447C;}
+.pill-read{background:#EAF3DE;color:#27500A;}
+.enriching-badge{font-size:9px;color:var(--ink3);display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border:0.5px solid var(--paper3);border-radius:2px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin{display:inline-block;animation:spin .8s linear infinite;}
+
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--ink3);border-radius:6px;font-size:18px;display:inline-flex;align-items:center;justify-content:center;min-width:var(--touch);min-height:var(--touch);}
+.icon-btn:active{color:var(--accent);background:var(--paper2);}
+.icon-btn-sm{min-width:36px;min-height:36px;font-size:16px;}
+
+.status-bar{display:flex;align-items:center;gap:.875rem;padding:.5rem 0;border-top:0.5px solid var(--paper3);margin-top:1.25rem;flex-wrap:wrap;}
+.status-item{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:5px;}
+.status-num{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--ink);}
+.status-sep{flex:1;}
+.saving-dot{width:6px;height:6px;border-radius:50%;background:var(--ink3);display:inline-block;}
+.saving-dot.active{background:#639922;animation:blink 1s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.connect-pill{height:30px;padding:0 12px;font-family:var(--sans);font-size:11px;cursor:pointer;border-radius:100px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;-webkit-appearance:none;}
+.connect-pill:active{background:var(--paper2);}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--ink3);}
+.empty-state i{font-size:40px;margin-bottom:.875rem;display:block;}
+.empty-state p{font-family:var(--serif);font-style:italic;font-size:18px;}
+.empty-state small{font-size:12px;margin-top:.5rem;display:block;}
+
+/* Sheets */
+.sheet-bg{display:none;position:fixed;inset:0;background:rgba(26,23,20,.45);z-index:50;align-items:flex-end;justify-content:center;}
+.sheet-bg.open{display:flex;}
+.sheet{background:var(--paper);border-radius:16px 16px 0 0;padding-bottom:calc(var(--safe-bottom) + 8px);width:100%;max-width:580px;}
+.sheet-handle{width:36px;height:4px;background:var(--paper3);border-radius:2px;margin:12px auto 4px;}
+.sheet-title{font-size:13px;color:var(--ink3);padding:.4rem 1.25rem .75rem;text-align:center;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.sheet-item{display:flex;align-items:center;gap:14px;padding:0 1.25rem;height:54px;font-size:16px;cursor:pointer;color:var(--ink);border-top:0.5px solid var(--paper3);}
+.sheet-item:active{background:var(--paper2);}
+.sheet-item i{font-size:20px;color:var(--ink3);}
+.sheet-item.danger{color:#A32D2D;}
+.sheet-item.danger i{color:#A32D2D;}
+
+.note-sheet-bg{display:none;position:fixed;inset:0;background:rgba(26,23,20,.45);z-index:60;align-items:flex-end;justify-content:center;}
+.note-sheet-bg.open{display:flex;}
+.note-sheet{background:var(--paper);border-radius:16px 16px 0 0;padding:1rem 1.25rem calc(var(--safe-bottom) + 16px);width:100%;max-width:580px;}
+.note-sheet h3{font-family:var(--serif);font-size:18px;margin-bottom:.875rem;padding-top:.25rem;}
+.note-input-field{width:100%;height:var(--touch);padding:0 14px;font-family:var(--sans);font-size:16px;border:0.5px solid var(--paper3);background:var(--paper2);color:var(--ink);border-radius:8px;outline:none;-webkit-appearance:none;margin-bottom:.875rem;}
+.note-input-field:focus{border-color:var(--ink3);background:white;}
+.note-footer{display:flex;gap:8px;justify-content:flex-end;}
+.nm-cancel{height:44px;padding:0 18px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);font-size:15px;cursor:pointer;border-radius:8px;-webkit-appearance:none;}
+.nm-save{height:44px;padding:0 18px;border:none;background:var(--ink);color:var(--paper);font-size:15px;cursor:pointer;border-radius:8px;-webkit-appearance:none;}
+
+/* Connect panel */
+.connect-bg{display:none;position:fixed;inset:0;background:rgba(26,23,20,.45);z-index:50;align-items:flex-end;justify-content:center;}
+.connect-bg.open{display:flex;}
+.connect-panel{background:var(--paper);border-radius:16px 16px 0 0;padding:0 0 calc(var(--safe-bottom) + 16px);width:100%;max-width:580px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem .5rem;position:sticky;top:0;background:var(--paper);border-bottom:0.5px solid var(--paper3);z-index:1;}
+.cp-head h2{font-family:var(--serif);font-size:20px;font-weight:700;}
+.cp-close{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:22px;padding:4px;border-radius:6px;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;}
+.cp-close:active{background:var(--paper2);}
+.cp-intro{font-size:13px;color:var(--ink3);padding:.625rem 1.25rem 0;line-height:1.55;}
+
+.method{border-bottom:0.5px solid var(--paper3);padding:1.125rem 1.25rem;}
+.method:last-child{border-bottom:none;}
+.method-head{display:flex;align-items:center;gap:10px;margin-bottom:.5rem;}
+.method-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.mi-tg{background:#E3F2FD;color:#229ED9;}
+.mi-ios{background:#F0F0FF;color:#5856D6;}
+.mi-email{background:#FFF3E0;color:#E8720C;}
+.mi-bookmark{background:#F3E5F5;color:#9C27B0;}
+.mi-sync{background:#E8F5E9;color:#2E7D32;}
+.method-title{font-family:var(--serif);font-size:16px;font-weight:700;}
+.method-badge{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:500;margin-left:auto;}
+.mb-best{background:#E8F5E9;color:#1B5E20;}
+.mb-easy{background:#E3F2FD;color:#0D47A1;}
+.mb-desk{background:#F3E5F5;color:#4A148C;}
+.method-desc{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:.875rem;}
+
+.step{display:flex;gap:10px;margin-bottom:.625rem;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:13px;color:var(--ink2);line-height:1.55;}
+.step-text strong{color:var(--ink);}
+.step-text code{font-size:11px;background:var(--paper2);border:0.5px solid var(--paper3);border-radius:3px;padding:1px 5px;font-family:monospace;}
+
+.copy-box{display:flex;align-items:center;gap:8px;background:var(--paper2);border:0.5px solid var(--paper3);border-radius:8px;padding:10px 12px;margin:.5rem 0;}
+.copy-box-text{flex:1;font-size:12px;font-family:monospace;color:var(--ink);word-break:break-all;line-height:1.5;}
+.copy-box-btn{height:32px;padding:0 12px;background:var(--ink);color:var(--paper);border:none;border-radius:6px;font-size:12px;cursor:pointer;flex-shrink:0;-webkit-appearance:none;white-space:nowrap;}
+.copy-box-btn:active{opacity:.8;}
+
+.field-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:4px;margin-top:.75rem;}
+.field-input{width:100%;height:44px;padding:0 12px;font-family:var(--sans);font-size:15px;border:0.5px solid var(--paper3);background:var(--paper2);color:var(--ink);border-radius:8px;outline:none;-webkit-appearance:none;margin-bottom:.625rem;}
+.field-input:focus{border-color:var(--ink3);background:white;}
+.save-btn{width:100%;height:44px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;font-family:var(--sans);font-size:15px;cursor:pointer;-webkit-appearance:none;margin-top:.25rem;}
+.save-btn:active{opacity:.8;}
+
+.info-box{background:var(--paper2);border-radius:8px;padding:.875rem 1rem;font-size:13px;color:var(--ink2);line-height:1.6;}
+.info-box strong{color:var(--ink);}
+
+/* ── Newsletters tab ──────────────────────── */
+.nl-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.nl-header-row h3{font-family:var(--serif);font-size:18px;font-weight:700;}
+.nl-sync-btn{height:32px;padding:0 14px;font-family:var(--sans);font-size:12px;cursor:pointer;border-radius:100px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;-webkit-appearance:none;}
+.nl-sync-btn:active{background:var(--paper2);}
+.nl-sync-btn.syncing{color:var(--accent2);}
+.nl-add-row{display:flex;gap:8px;margin-bottom:.75rem;}
+.nl-input{flex:1;min-width:0;height:44px;padding:0 12px;font-family:var(--sans);font-size:15px;border:0.5px solid var(--paper3);background:var(--paper2);color:var(--ink);border-radius:8px;outline:none;-webkit-appearance:none;}
+.nl-input:focus{border-color:var(--ink3);background:white;}
+.nl-add-btn{height:44px;width:44px;font-size:18px;cursor:pointer;border-radius:8px;background:var(--ink);color:var(--paper);border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nl-add-btn:active{opacity:.8;}
+.nl-source{display:flex;align-items:center;gap:10px;padding:.875rem 0;border-top:0.5px solid var(--paper3);}
+.nl-source:first-child{border-top:none;}
+.nl-source-icon{width:36px;height:36px;border-radius:8px;background:var(--paper2);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nl-source-icon img{width:100%;height:100%;object-fit:cover;}
+.nl-source-icon i{font-size:18px;color:var(--ink3);}
+.nl-source-body{flex:1;min-width:0;}
+.nl-source-name{font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nl-source-meta{font-size:11px;color:var(--ink3);margin-top:1px;}
+.nl-source-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;}
+.nl-source-btn{height:30px;padding:0 10px;font-family:var(--sans);font-size:11px;cursor:pointer;border-radius:100px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);-webkit-appearance:none;display:inline-flex;align-items:center;gap:4px;}
+.nl-source-btn:active{background:var(--paper2);}
+.nl-source-btn.del{color:#A32D2D;border-color:#f5c5c5;}
+.nl-empty{text-align:center;padding:2.5rem 1rem;color:var(--ink3);}
+.nl-empty i{font-size:32px;margin-bottom:.75rem;display:block;}
+.nl-empty p{font-family:var(--serif);font-style:italic;font-size:16px;margin-bottom:.5rem;}
+.nl-sync-status{font-size:12px;color:var(--ink3);text-align:center;padding:.5rem 0;}
+.nl-hint{background:var(--paper2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:.875rem;}
+.nl-hint strong{color:var(--ink);}
+.nl-hint code{font-size:11px;background:var(--paper);border:0.5px solid var(--paper3);border-radius:3px;padding:1px 5px;font-family:monospace;}
+
+.toast{position:fixed;bottom:calc(var(--safe-bottom) + 28px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:100px;font-size:13px;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* PDF upload button */
+.pdf-btn{height:var(--touch);width:var(--touch);font-size:18px;cursor:pointer;border-radius:8px;background:var(--paper2);color:var(--ink2);border:0.5px solid var(--paper3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pdf-btn:active{background:var(--paper3);}
+
+/* PDF card thumbnail */
+.pdf-thumb{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(135deg,#fff5f2 0%,#fde8e2 100%);}
+.pdf-thumb i{font-size:22px;color:#b5451b;}
+.pdf-thumb span{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#b5451b;font-weight:600;}
+.pdf-hero-thumb{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#fff5f2 0%,#fde8e2 100%);}
+.pdf-hero-thumb i{font-size:40px;color:#b5451b;}
+.pdf-hero-thumb span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#b5451b;font-weight:600;}
+.pdf-size{font-size:10px;color:var(--ink3);}
+
+/* ── Recommendations ──────────────────────── */
+.rec-tab-row{display:flex;border-bottom:2px solid var(--paper3);margin-bottom:1.25rem;}
+.rec-tab{flex:1;height:40px;font-family:var(--sans);font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--ink3);position:relative;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;}
+.rec-tab.active{color:var(--ink);font-weight:500;}
+.rec-tab.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--ink);border-radius:1px;}
+.rec-tab i{font-size:16px;}
+
+.rec-section{display:none;}
+.rec-section.active{display:block;}
+
+.rec-generate-area{text-align:center;padding:2rem 1rem;}
+.rec-generate-area p{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:1.25rem;max-width:340px;margin-left:auto;margin-right:auto;}
+.rec-generate-btn{height:var(--touch);padding:0 24px;font-family:var(--sans);font-size:15px;cursor:pointer;border-radius:100px;background:var(--ink);color:var(--paper);border:none;display:inline-flex;align-items:center;gap:8px;-webkit-appearance:none;}
+.rec-generate-btn:active{opacity:.8;}
+.rec-generate-btn:disabled{opacity:.5;cursor:default;}
+.rec-thinking{display:flex;flex-direction:column;align-items:center;gap:12px;padding:2.5rem 1rem;color:var(--ink3);}
+.rec-thinking p{font-family:var(--serif);font-style:italic;font-size:15px;}
+
+.rec-card{border-top:0.5px solid var(--paper3);padding:1rem 0;display:flex;gap:12px;align-items:flex-start;}
+.rec-card:first-child{border-top:none;}
+.rec-icon{width:48px;height:48px;border-radius:8px;background:var(--paper2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;color:var(--ink3);}
+.rec-body{flex:1;min-width:0;}
+.rec-why{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:.3rem;font-weight:500;}
+.rec-title{font-family:var(--serif);font-size:15px;font-weight:700;line-height:1.35;color:var(--ink);margin-bottom:.3rem;}
+.rec-desc{font-size:12px;color:var(--ink2);line-height:1.55;margin-bottom:.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rec-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rec-source{font-size:10px;color:var(--ink3);}
+.rec-search-btn{height:28px;padding:0 12px;font-family:var(--sans);font-size:11px;cursor:pointer;border-radius:100px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);display:inline-flex;align-items:center;gap:4px;-webkit-appearance:none;margin-left:auto;}
+.rec-search-btn:active{background:var(--paper2);}
+
+.rec-profile{background:var(--paper2);border-radius:8px;padding:.875rem 1rem;margin-bottom:1.25rem;font-size:13px;color:var(--ink2);line-height:1.55;}
+.rec-profile strong{color:var(--ink);}
+.rec-refresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
+.rec-refresh-btn{height:30px;padding:0 12px;font-family:var(--sans);font-size:11px;cursor:pointer;border-radius:100px;border:0.5px solid var(--paper3);background:transparent;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;-webkit-appearance:none;}
+.rec-refresh-btn:active{background:var(--paper2);}
+.rec-timestamp{font-size:10px;color:var(--ink3);}
+
+/* PDF viewer sheet */
+.pdf-viewer-bg{display:none;position:fixed;inset:0;background:rgba(26,23,20,.85);z-index:80;flex-direction:column;}
+.pdf-viewer-bg.open{display:flex;}
+.pdf-viewer-bar{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;padding-top:calc(var(--safe-top) + .75rem);background:var(--ink);color:var(--paper);flex-shrink:0;}
+.pdf-viewer-title{flex:1;font-size:14px;font-family:var(--serif);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdf-viewer-close{background:none;border:none;cursor:pointer;color:var(--paper);font-size:22px;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:6px;opacity:.8;}
+.pdf-viewer-close:active{opacity:1;background:rgba(255,255,255,.1);}
+.pdf-viewer-frame{flex:1;background:#525659;overflow:hidden;}
+.pdf-viewer-frame iframe{width:100%;height:100%;border:none;display:block;}
+.pdf-viewer-frame .pdf-embed-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:white;text-align:center;padding:2rem;}
+.pdf-viewer-frame .pdf-embed-fallback i{font-size:48px;opacity:.5;}
+.pdf-viewer-frame .pdf-embed-fallback p{font-size:14px;opacity:.7;max-width:280px;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">The Reader</h1>
+
+<div class="masthead">
+  <div class="masthead-eyebrow">Your personal reading list</div>
+  <div class="masthead-title">The <span>Reader</span></div>
+  <div class="masthead-meta">
+    <span id="date-line">—</span>
+    <span class="sep">✦</span>
+    <span id="count-line">0 saved</span>
+    <span class="sep">✦</span>
+    <span id="unread-line">0 unread</span>
+  </div>
+</div>
+
+<div class="toolbar" style="margin-top:.875rem;">
+  <div class="add-row">
+    <input type="url" class="tb-input" id="url-input" placeholder="Paste a URL to save…" autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false"/>
+    <button class="pdf-btn" onclick="document.getElementById('pdf-file-input').click()" aria-label="Upload PDF" title="Upload a PDF"><i class="ti ti-file-type-pdf"></i></button>
+    <button class="add-btn" onclick="addLink()" aria-label="Save URL"><i class="ti ti-plus"></i></button>
+  </div>
+  <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;" onchange="handlePdfUpload(this)"/>
+  <div class="rec-tab-row">
+    <button class="rec-tab active" id="tab-list" onclick="switchTab('list')"><i class="ti ti-books"></i> My List</button>
+    <button class="rec-tab" id="tab-nl" onclick="switchTab('nl')"><i class="ti ti-mail"></i> Newsletters</button>
+    <button class="rec-tab" id="tab-rec" onclick="switchTab('rec')"><i class="ti ti-sparkles"></i> For You</button>
+  </div>
+
+  <!-- My List filters (shown when on list tab) -->
+  <div id="list-filters">
+    <div class="filter-row">
+      <button class="fb active" onclick="setFilter('all',this)" id="fb-all">All</button>
+      <button class="fb" onclick="setFilter('unread',this)" id="fb-unread">Unread</button>
+      <button class="fb" onclick="setFilter('reading',this)" id="fb-reading">Reading</button>
+      <button class="fb" onclick="setFilter('read',this)" id="fb-read">Read</button>
+      <div class="search-wrap">
+        <i class="ti ti-search search-icon"></i>
+        <input type="search" class="search-input" id="search-input" placeholder="Search…" oninput="render()"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="connect-banner" id="connect-banner">
+  <i class="ti ti-device-mobile" style="color:var(--ink3);font-size:18px;flex-shrink:0;"></i>
+  <span><strong>Add from anywhere.</strong> Send links via Telegram, iOS Shortcut, email, or bookmarklet.</span>
+  <button class="cb-btn" onclick="openConnect()"><i class="ti ti-plug" style="font-size:13px;"></i> Set up</button>
+</div>
+
+<div class="rec-section active" id="section-list">
+  <div id="magazine-body"></div>
+</div>
+
+<div class="rec-section" id="section-nl">
+  <div id="nl-body"></div>
+</div>
+
+<div class="rec-section" id="section-rec">
+  <div id="rec-body"></div>
+</div>
+
+<div class="status-bar">
+  <div class="status-item"><span class="saving-dot" id="save-dot"></span><span id="save-status" style="font-size:11px;color:var(--ink3);">Ready</span></div>
+  <div class="status-sep"></div>
+  <div class="status-item"><span class="status-num" id="s-total">0</span>&nbsp;saved</div>
+  <div class="status-item"><span class="status-num" id="s-unread">0</span>&nbsp;unread</div>
+  <div class="status-item"><span class="status-num" id="s-read">0</span>&nbsp;read</div>
+  <button class="connect-pill" onclick="openConnect()"><i class="ti ti-plug" style="font-size:12px;"></i> Connections</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Article action sheet -->
+<div class="sheet-bg" id="action-sheet" onclick="closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-title"></div>
+    <div id="sheet-items"></div>
+  </div>
+</div>
+
+<!-- Note sheet -->
+<div class="note-sheet-bg" id="note-sheet" onclick="closeNoteSheet()">
+  <div class="note-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle" style="margin:0 auto 12px;"></div>
+    <h3>Add a note</h3>
+    <input type="text" class="note-input-field" id="note-input" placeholder="Why did you save this?" maxlength="200"/>
+    <div class="note-footer">
+      <button class="nm-cancel" onclick="closeNoteSheet()">Cancel</button>
+      <button class="nm-save" onclick="saveNote()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Connect panel -->
+<div class="connect-bg" id="connect-bg" onclick="closeConnect()">
+  <div class="connect-panel" onclick="event.stopPropagation()">
+    <div class="sheet-handle" style="margin:12px auto 0;"></div>
+    <div class="cp-head">
+      <h2>Add from anywhere</h2>
+      <button class="cp-close" onclick="closeConnect()"><i class="ti ti-x"></i></button>
+    </div>
+    <p class="cp-intro">Every method below adds directly to your Reader. The Safari options are the fastest on iPhone, iPad and Mac.</p>
+
+    <!-- ═══ SAFARI SECTION ═══ -->
+    <div class="method" style="background:linear-gradient(135deg,#f0f8ff 0%,#faf9f7 100%);border-radius:12px;margin:.75rem 1.25rem;padding:1.25rem;">
+      <div class="method-head" style="margin-bottom:.875rem;">
+        <div class="method-icon" style="background:#006CFF;color:#fff;font-size:22px;"><i class="ti ti-brand-safari"></i></div>
+        <div>
+          <div class="method-title">Safari Extension</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px;">iPhone · iPad · Mac — one tap to save</div>
+        </div>
+        <span class="method-badge mb-best" style="margin-left:auto;">Recommended</span>
+      </div>
+
+      <!-- Device switcher -->
+      <div style="display:flex;gap:6px;margin-bottom:1rem;" id="safari-tabs">
+        <button class="safari-tab active" onclick="showSafariTab('iphone')" id="stab-iphone" style="flex:1;height:34px;border-radius:8px;border:0.5px solid var(--paper3);background:white;font-family:var(--sans);font-size:12px;cursor:pointer;color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-device-iphone" style="font-size:14px;"></i> iPhone</button>
+        <button class="safari-tab" onclick="showSafariTab('ipad')" id="stab-ipad" style="flex:1;height:34px;border-radius:8px;border:0.5px solid var(--paper3);background:transparent;font-family:var(--sans);font-size:12px;cursor:pointer;color:var(--ink3);display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-device-ipad" style="font-size:14px;"></i> iPad</button>
+        <button class="safari-tab" onclick="showSafariTab('mac')" id="stab-mac" style="flex:1;height:34px;border-radius:8px;border:0.5px solid var(--paper3);background:transparent;font-family:var(--sans);font-size:12px;cursor:pointer;color:var(--ink3);display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-device-laptop" style="font-size:14px;"></i> Mac</button>
+      </div>
+
+      <!-- iPhone instructions -->
+      <div id="safari-iphone">
+        <div style="background:white;border-radius:8px;padding:1rem;margin-bottom:.75rem;">
+          <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:.625rem;display:flex;align-items:center;gap:6px;"><span style="background:#006CFF;color:white;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">A</span> One-time setup (2 min)</div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">1</div><div class="step-text">Open the <strong>Shortcuts</strong> app → tap <strong>+</strong> → name it <strong>"Save to Reader"</strong>.</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">2</div><div class="step-text">Tap <strong>Add Action</strong> → search <strong>"URL"</strong> → pick <strong>Get URLs from Input</strong>.</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">3</div><div class="step-text">Tap <strong>+</strong> again → search <strong>"Get contents"</strong> → pick <strong>Get Contents of URL</strong>. Tap the URL field, set it to:</div></div>
+          <div class="copy-box" style="margin:.375rem 0 .625rem;">
+            <span class="copy-box-text" id="safari-iphone-url" style="font-size:11px;">Loading…</span>
+            <button class="copy-box-btn" onclick="copyEl('safari-iphone-url')">Copy</button>
+          </div>
+          <div style="font-size:12px;color:var(--ink3);margin-bottom:.625rem;">Tap <strong>Show more</strong> → Method: <strong>GET</strong> (default is fine).</div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">4</div><div class="step-text">Tap the shortcut name at the top → toggle <strong>Use as Quick Action</strong> ON → enable <strong>Show in Share Sheet</strong>.</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">5</div><div class="step-text">Done! In Safari (or any app), tap the <strong>Share <i class="ti ti-share" style="font-size:11px;"></i></strong> button → scroll down → tap <strong>Save to Reader</strong>.</div></div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#1B5E20;line-height:1.6;">
+          <strong>Works in:</strong> Safari, Chrome, WhatsApp, Telegram, iMessage, Twitter/X, Reddit, Mail — any iOS app with a share button.
+        </div>
+      </div>
+
+      <!-- iPad instructions -->
+      <div id="safari-ipad" style="display:none;">
+        <div style="background:white;border-radius:8px;padding:1rem;margin-bottom:.75rem;">
+          <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:.625rem;">iPad setup is identical to iPhone above, plus you get a toolbar button:</div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">1</div><div class="step-text">Follow the iPhone steps above to create the <strong>Save to Reader</strong> shortcut.</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">2</div><div class="step-text">In Safari on iPad, tap the <strong>Extensions</strong> <i class="ti ti-puzzle" style="font-size:11px;"></i> icon in the address bar → your shortcut appears there for one-tap saving without opening the share sheet.</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">3</div><div class="step-text">Or tap the <strong>Share</strong> button in the toolbar → <strong>Save to Reader</strong>.</div></div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#1B5E20;">
+          <strong>Tip:</strong> On iPadOS you can pin the shortcut to the Safari toolbar for even faster access.
+        </div>
+      </div>
+
+      <!-- Mac instructions -->
+      <div id="safari-mac" style="display:none;">
+        <div style="background:white;border-radius:8px;padding:1rem;margin-bottom:.75rem;">
+          <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:.625rem;display:flex;align-items:center;gap:6px;"><span style="background:#006CFF;color:white;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">A</span> Safari toolbar button (fastest)</div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">1</div><div class="step-text">In Safari, go to <strong>Bookmarks → Show Bookmarks Bar</strong> (⇧⌘B).</div></div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">2</div><div class="step-text">Copy the bookmarklet below, then drag it to your Bookmarks Bar — or right-click the bar and choose <strong>Add Bookmark</strong>, paste as the URL.</div></div>
+          <div class="copy-box" style="margin:.375rem 0 .625rem;">
+            <span class="copy-box-text" id="safari-mac-bm" style="font-size:11px;">Click Generate below</span>
+            <button class="copy-box-btn" onclick="genSafariBookmarklet()">Generate</button>
+          </div>
+          <div class="step"><div class="step-num" style="background:#006CFF;">3</div><div class="step-text">Click the bookmark in your bar whenever you're on a page you want to save. It opens your Reader with the URL pre-filled.</div></div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:1rem;margin-bottom:.75rem;">
+          <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:.625rem;display:flex;align-items:center;gap:6px;"><span style="background:#555;color:white;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">B</span> Mac Share Menu (alternative)</div>
+          <div class="step"><div class="step-num">1</div><div class="step-text">Open <strong>System Settings → Privacy & Security → Extensions → Share Menu</strong>.</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Enable <strong>Shortcuts</strong> here, then create a Mac shortcut (same steps as iPhone above). It then appears in Safari's Share menu.</div></div>
+        </div>
+        <div style="background:#FFF9E6;border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#7A5A00;line-height:1.6;">
+          <strong>Note:</strong> True Safari App Extensions (like 1Password or Instapaper) require Xcode + Apple Developer account ($99/yr) to build and distribute. The bookmarklet above behaves identically for saving purposes.
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS Share Sheet -->
+    <div class="method">
+      <div class="method-head">
+        <div class="method-icon mi-ios"><i class="ti ti-brand-apple"></i></div>
+        <span class="method-title">iOS Share Sheet (other apps)</span>
+        <span class="method-badge mb-easy">All iOS apps</span>
+      </div>
+      <p class="method-desc">The Shortcut you created above already works everywhere. This is a reminder: in WhatsApp, iMessage, Telegram, Chrome — any app — use the share button and tap <strong>Save to Reader</strong>.</p>
+      <div style="background:var(--paper2);border-radius:8px;padding:.75rem 1rem;font-size:13px;color:var(--ink2);">
+        Your Reader URL: <div class="copy-box" style="margin:.5rem 0 0;"><span class="copy-box-text" id="ios-url-display" style="font-size:11px;">Loading…</span><button class="copy-box-btn" onclick="copyEl('ios-url-display')">Copy</button></div>
+      </div>
+    </div>
+
+    <!-- Telegram -->
+    <div class="method">
+      <div class="method-head">
+        <div class="method-icon mi-tg"><i class="ti ti-brand-telegram"></i></div>
+        <span class="method-title">Telegram Bot</span>
+        <span class="method-badge mb-easy">Any device</span>
+      </div>
+      <p class="method-desc">Create a private Telegram bot. Send it any URL from your phone, desktop, or tablet and it gets added to your Reader automatically via a free Pipedream webhook.</p>
+      <div class="step"><div class="step-num">1</div><div class="step-text">In Telegram, open <strong>@BotFather</strong> → send <code>/newbot</code> → follow the steps → copy your <strong>Bot Token</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Go to <a href="https://pipedream.com" target="_blank">pipedream.com</a> (free). Create a workflow → HTTP trigger → Node.js step. Copy the webhook URL.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">In the Node.js step, paste this code:</div></div>
+      <div class="copy-box">
+        <span class="copy-box-text" id="tg-code-block">export default defineComponent({
+  async run({ steps, $ }) {
+    const msg = steps.trigger.event.body?.message?.text || '';
+    const match = msg.match(/https?:\/\/[^\s]+/);
+    if (!match) return $.respond({ status: 200, body: 'no url' });
+    const readerUrl = 'PASTE_YOUR_READER_URL_HERE';
+    await fetch(readerUrl + '?add=' + encodeURIComponent(match[0]));
+    return $.respond({ status: 200, body: 'saved' });
+  }
+});</span>
+        <button class="copy-box-btn" onclick="copyEl('tg-code-block')">Copy</button>
+      </div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Register the webhook: open this URL in your browser (replace both tokens):<br><code>https://api.telegram.org/botTOKEN/setWebhook?url=YOUR_PIPEDREAM_URL</code></div></div>
+    </div>
+
+    <!-- Email -->
+    <div class="method">
+      <div class="method-head">
+        <div class="method-icon mi-email"><i class="ti ti-mail"></i></div>
+        <span class="method-title">Email Forwarding</span>
+        <span class="method-badge mb-easy">Any email client</span>
+      </div>
+      <p class="method-desc">Get a dedicated email address. Forward any email with a link and the URL auto-saves to your Reader.</p>
+      <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://zapier.com" target="_blank">zapier.com</a> (free) → New Zap → Trigger: <strong>Email by Zapier</strong> → gives you a <code>@robot.zapier.com</code> address.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Action: <strong>Webhooks → GET</strong>. URL: your Reader URL + <code>?add=</code> + first URL from email body.</div></div>
+      <label class="field-label">Your Zapier Email Address</label>
+      <input type="email" class="field-input" id="zapier-email-input" placeholder="you@robot.zapier.com"/>
+      <button class="save-btn" onclick="saveZapierEmail()">Save Email Address</button>
+      <div id="zapier-saved" style="display:none;margin-top:.75rem;" class="copy-box">
+        <span class="copy-box-text" id="zapier-email-display"></span>
+        <button class="copy-box-btn" onclick="copyEl('zapier-email-display')">Copy</button>
+      </div>
+    </div>
+
+    <!-- Multi-device sync -->
+    <div class="method">
+      <div class="method-head">
+        <div class="method-icon mi-sync"><i class="ti ti-refresh"></i></div>
+        <span class="method-title">Multi-device Sync</span>
+      </div>
+      <div class="info-box">
+        <strong>Already active.</strong> Your list is stored in your Claude account and syncs across all devices automatically.<br><br>
+        <strong>Install as app on iPhone:</strong> Open in Safari → Share <i class="ti ti-share" style="font-size:11px;"></i> → <em>Add to Home Screen</em>.
+      </div>
+    </div>
+
+    <!-- Twitter/X Bookmarks -->
+    <div class="method">
+      <div class="method-head">
+        <div class="method-icon" style="background:#000;color:#fff;"><i class="ti ti-brand-x"></i></div>
+        <span class="method-title">X / Twitter Bookmarks</span>
+        <span class="method-badge mb-easy">Auto-import</span>
+      </div>
+      <p class="method-desc">Import your X bookmarks. Any tweet containing a URL will be saved as an article.</p>
+      <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a> → create a project → copy your <strong>Bearer Token</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Paste below and tap <strong>Import now</strong>.</div></div>
+      <label class="field-label">Bearer Token</label>
+      <input type="password" class="field-input" id="tw-token-input" placeholder="AAAA…" autocomplete="off"/>
+      <div style="display:flex;gap:8px;margin-top:.25rem;">
+        <button class="save-btn" style="flex:1;" onclick="importTwitterBookmarks()"><i class="ti ti-brand-x" style="font-size:15px;margin-right:6px;"></i>Import now</button>
+        <button class="save-btn" style="flex:1;background:var(--paper2);color:var(--ink);border:0.5px solid var(--paper3);" onclick="saveTwitterToken()">Save token</button>
+      </div>
+      <div id="tw-status" style="font-size:12px;color:var(--ink3);margin-top:.625rem;display:none;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PDF viewer -->
+<div class="pdf-viewer-bg" id="pdf-viewer">
+  <div class="pdf-viewer-bar">
+    <button class="pdf-viewer-close" onclick="closePdfViewer()"><i class="ti ti-x"></i></button>
+    <div class="pdf-viewer-title" id="pdf-viewer-title">Document</div>
+    <button class="pdf-viewer-close" onclick="downloadCurrentPdf()" title="Download"><i class="ti ti-download"></i></button>
+  </div>
+  <div class="pdf-viewer-frame" id="pdf-viewer-frame"></div>
+</div>
+
+<script>
+var STORAGE_KEY='reader_v3';
+var CONFIG_KEY='reader_config_v1';
+var REC_KEY='reader_recs_v1';
+var items=[];
+var cfg={zapierEmail:''};
+var activeFilter='all';
+var activeTab='list';
+var editingNoteId=null;
+var sheetItemId=null;
+var recData=null; // {recs:[...], profile:'...', generatedAt: timestamp}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function getDomain(url){try{return new URL(url).hostname.replace('www.','');}catch(e){return url;}}
+function getFavicon(url){try{return'https://www.google.com/s2/favicons?domain='+new URL(url).hostname+'&sz=32';}catch(e){return '';}}
+function slugToTitle(url){
+  try{
+    var u=new URL(url),parts=u.pathname.split('/').filter(Boolean);
+    for(var i=parts.length-1;i>=0;i--){
+      var s=parts[i].replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').trim();
+      if(s.length>4&&!/^\d+$/.test(s))return s.replace(/\b\w/g,function(c){return c.toUpperCase();});
+    }
+    return u.hostname.replace('www.','');
+  }catch(e){return url;}
+}
+
+async function load(){
+  try{var r=await window.storage.get(STORAGE_KEY);if(r&&r.value)items=JSON.parse(r.value);}catch(e){items=[];}
+  try{var c=await window.storage.get(CONFIG_KEY);if(c&&c.value)cfg=Object.assign(cfg,JSON.parse(c.value));}catch(e){}
+  try{var rc=await window.storage.get(REC_KEY);if(rc&&rc.value)recData=JSON.parse(rc.value);}catch(e){}
+  try{var ns=await window.storage.get(NL_KEY);if(ns&&ns.value)nlSources=JSON.parse(ns.value);}catch(e){}
+  checkUrlParam();
+  render();updateStats();
+  if(activeTab==='rec')renderRecs();
+  if(activeTab==='nl')renderNewsletters();
+  // Background sync newsletters on load
+  if(nlSources.length) setTimeout(syncAllNewsletters, 1200);
+}
+function checkUrlParam(){
+  try{
+    var p=new URLSearchParams(window.location.search),addUrl=p.get('add');
+    if(addUrl&&addUrl.startsWith('http')){
+      window.history.replaceState({},'',window.location.pathname);
+      addLinkDirect(addUrl);
+    }
+  }catch(e){}
+}
+async function persist(){
+  setSaving(true);
+  try{await window.storage.set(STORAGE_KEY,JSON.stringify(items));}catch(e){}
+  setSaving(false);
+}
+async function persistCfg(){
+  try{await window.storage.set(CONFIG_KEY,JSON.stringify(cfg));}catch(e){}
+}
+function setSaving(v){
+  document.getElementById('save-dot').classList.toggle('active',v);
+  document.getElementById('save-status').textContent=v?'Saving…':'Saved';
+}
+
+document.getElementById('url-input').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){e.target.blur();addLink();}
+});
+async function addLink(){
+  var raw=document.getElementById('url-input').value.trim();
+  if(!raw)return;
+  document.getElementById('url-input').value='';
+  await addLinkDirect(raw);
+}
+async function addLinkDirect(raw){
+  if(!raw.startsWith('http'))raw='https://'+raw;
+  try{new URL(raw);}catch(e){showToast('Please enter a valid URL');return;}
+  if(items.find(function(i){return i.url===raw;})){showToast('Already in your list');return;}
+  var item={id:uid(),url:raw,title:slugToTitle(raw),description:'',domain:getDomain(raw),tag:'article',status:'unread',note:'',savedAt:Date.now(),image:'',enriched:false,enriching:true};
+  items.unshift(item);
+  await persist();render();updateStats();
+  showToast('Saved — fetching preview…');
+  enrich(item.id);
+}
+
+async function enrich(id){
+  var item=items.find(function(i){return i.id===id;});
+  if(!item)return;
+  var title='',description='',image='',tag='article';
+  try{
+    var ml=await(await fetch('https://api.microlink.io/?url='+encodeURIComponent(item.url)+'&meta=true')).json();
+    if(ml.status==='success'){
+      title=(ml.data.title||'').trim();
+      description=(ml.data.description||'').trim();
+      image=ml.data.image&&ml.data.image.url?ml.data.image.url:(ml.data.logo&&ml.data.logo.url?ml.data.logo.url:'');
+    }
+    if(!title)throw new Error('no title');
+  }catch(e){
+    try{
+      var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:'Use web_search to find the real page title and 1-sentence description for the URL. Respond ONLY with raw JSON: {"title":"...","description":"...","tag":"article|research|tool|video|reference|news|other"}',tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:'URL: '+item.url}]})});
+      var data=await resp.json();
+      for(var b=0;b<(data.content||[]).length;b++){
+        var block=data.content[b];
+        if(block.type==='text'&&block.text){var m=block.text.match(/\{[\s\S]*?\}/);if(m){try{var p=JSON.parse(m[0]);if(p.title&&p.title.length>2&&!p.title.startsWith('http')){title=p.title;description=p.description||'';tag=p.tag||'article';}}catch(e2){}}}
+      }
+    }catch(e3){}
+  }
+  if(!title)title=slugToTitle(item.url);
+  var idx=items.findIndex(function(i){return i.id===id;});
+  if(idx!==-1){
+    items[idx].title=title||items[idx].title;items[idx].description=description||items[idx].description;
+    items[idx].tag=tag||items[idx].tag;items[idx].image=image||items[idx].image;
+    items[idx].enriched=true;items[idx].enriching=false;
+    await persist();render();
+  }
+}
+
+function setFilter(f,btn){
+  activeFilter=f;
+  ['all','unread','reading','read'].forEach(function(k){var b=document.getElementById('fb-'+k);if(b)b.classList.toggle('active',k===f);});
+  render();
+}
+function getFiltered(){
+  var q=(document.getElementById('search-input').value||'').toLowerCase(),list=items.slice();
+  if(activeFilter!=='all')list=list.filter(function(i){return i.status===activeFilter;});
+  if(q)list=list.filter(function(i){return(i.title+i.description+i.domain+i.tag+i.note).toLowerCase().indexOf(q)!==-1;});
+  return list;
+}
+function updateStats(){
+  var now=new Date();
+  document.getElementById('date-line').textContent=now.toLocaleDateString('en-GB',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('count-line').textContent=items.length+' saved';
+  document.getElementById('unread-line').textContent=items.filter(function(i){return i.status==='unread';}).length+' unread';
+  document.getElementById('s-total').textContent=items.length;
+  document.getElementById('s-unread').textContent=items.filter(function(i){return i.status==='unread';}).length;
+  document.getElementById('s-read').textContent=items.filter(function(i){return i.status==='read';}).length;
+}
+var TC={article:'#b5451b',research:'#1b4b8a',tool:'#1b4b8a',video:'#b5451b',reference:'#1b4b8a',news:'#b5451b',pdf:'#b5451b',other:'#8a8783'};
+function pillClass(s){return s==='read'?'pill-read':s==='reading'?'pill-reading':'pill-unread';}
+function statusBadge(item){
+  if(item.enriching)return'<span class="enriching-badge"><span class="spin"><i class="ti ti-loader" style="font-size:9px;"></i></span> Fetching…</span>';
+  return'<span class="card-pill '+pillClass(item.status)+'">'+item.status+'</span>';
+}
+function thumbHtml(item){
+  if(item.isPdf)return'<div class="pdf-thumb"><i class="ti ti-file-type-pdf"></i><span>PDF</span></div>';
+  if(item.image)return'<img src="'+esc(item.image)+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentNode.innerHTML=\'<i class=ti ti-article style=font-size:20px;color:#e8e5df></i>\'" alt="">';
+  return'<i class="ti ti-article" style="font-size:20px;color:#e8e5df;"></i>';
+}
+function render(){
+  var list=getFiltered(),body=document.getElementById('magazine-body');
+  if(!list.length){body.innerHTML='<div class="empty-state"><i class="ti ti-books"></i><p>Your reading list awaits.</p><small>Paste a URL above to get started.</small></div>';return;}
+
+  var html='';
+
+  // ── Top story (slot 0) ──────────────────────
+  var h=list[0];
+  var hClick=h.isPdf?"openPdf('"+h.id+"')" :"openUrl('"+escA(h.url)+"')";
+  var hImgInner=h.isPdf
+    ?'<div class="mg-top-ph" style="background:linear-gradient(135deg,#fff5f2,#fde8e2);width:100%;height:100%;"><i class="ti ti-file-type-pdf" style="font-size:28px;color:#b5451b;"></i></div>'
+    :(h.image?'<img src="'+esc(h.image)+'" onerror="this.parentNode.innerHTML=\'<div class=mg-top-ph style=width:100%;height:100%><i class=ti ti-photo-off style=font-size:24px;color:#e8e5df></i></div>\'" alt="">':'<div class="mg-top-ph" style="width:100%;height:100%;"><i class="ti ti-photo-off" style="font-size:24px;color:#e8e5df;"></i></div>');
+  html+='<div class="section-rule"><div class="section-rule-label">Latest</div><div class="section-rule-line"></div></div>'
+    +'<div class="mg-top">'
+    +'<div class="mg-top-img" onclick="'+hClick+'">'+hImgInner+'</div>'
+    +'<div class="mg-top-info">'
+    +'<div><div class="mg-top-tag" style="color:'+(TC[h.tag]||'#b5451b')+';">'+esc(h.tag)+'</div>'
+    +'<div class="mg-top-title" onclick="'+hClick+'">'+esc(h.title)+'</div></div>'
+    +'<div class="mg-top-foot">'
+    +'<div class="mg-top-domain">'+(h.isPdf?'<i class="ti ti-file-type-pdf" style="color:#b5451b;font-size:11px;"></i>':'<img src="'+getFavicon(h.url)+'" onerror="this.style.display=\'none\'" alt="">')+esc(h.domain)+'</div>'
+    +statusBadge(h)
+    +'<button class="icon-btn icon-btn-sm" style="min-width:32px;min-height:32px;" onclick="openSheet(\''+h.id+'\')" aria-label="Options"><i class="ti ti-dots-vertical"></i></button>'
+    +'</div></div></div>';
+
+  // ── 2-col rows (slots 1-2, 3-4, …) up to 6 items ──
+  var gridItems=list.slice(1,7);
+  for(var g=0;g<gridItems.length;g+=2){
+    var a=gridItems[g], b2=gridItems[g+1];
+    html+='<div class="mg-row2">';
+    [a,b2].forEach(function(item){
+      if(!item)return;
+      var click=item.isPdf?"openPdf('"+item.id+"')" :"openUrl('"+escA(item.url)+"')";
+      var imgH=item.isPdf
+        ?'<div class="mg-cell-ph" style="width:100%;height:100%;background:linear-gradient(135deg,#fff5f2,#fde8e2);display:flex;align-items:center;justify-content:center;"><i class="ti ti-file-type-pdf" style="font-size:18px;color:#b5451b;"></i></div>'
+        :(item.image?'<img src="'+esc(item.image)+'" onerror="this.style.display=\'none\'" alt="">':'<div class="mg-cell-ph"><i class="ti ti-article"></i></div>');
+      html+='<div class="mg-cell2">'
+        +'<div class="mg-cell-img" onclick="'+click+'">'+imgH+'</div>'
+        +'<div class="mg-cell-tag" style="color:'+(TC[item.tag]||'#b5451b')+';">'+esc(item.tag)+'</div>'
+        +'<div class="mg-cell-title" onclick="'+click+'">'+esc(item.title)+'</div>'
+        +'<div class="mg-cell-foot"><span class="mg-cell-domain">'+esc(item.domain)+'</span>'
+        +'<button class="icon-btn icon-btn-sm" style="min-width:28px;min-height:28px;font-size:14px;" onclick="openSheet(\''+item.id+'\')" aria-label="Options"><i class="ti ti-dots-vertical"></i></button>'
+        +'</div></div>';
+    });
+    html+='</div>';
+  }
+
+  // ── List for the rest (slot 7+) ──────────────
+  var queueItems=list.slice(7);
+  if(queueItems.length){
+    html+='<div class="section-rule"><div class="section-rule-label">Queue</div><div class="section-rule-line"></div></div><div class="card-list">';
+    queueItems.forEach(function(item){
+      var cardClick=item.isPdf?"openPdf('"+item.id+"')" :"openUrl('"+escA(item.url)+"')";
+      html+='<div class="article-card"><div class="ac-thumb">'+thumbHtml(item)+'</div>'
+        +'<div class="ac-body"><div class="ac-tag" style="color:'+(TC[item.tag]||'#b5451b')+';">'+esc(item.tag)+'</div>'
+        +'<div class="ac-title" onclick="'+cardClick+'">'+esc(item.title)+'</div>'
+        +'<div class="ac-domain">'+(item.isPdf&&item.pdfSize?'<i class="ti ti-file-type-pdf" style="font-size:10px;color:#b5451b;vertical-align:-1px;"></i> '+esc(item.pdfSize):esc(item.domain))+'</div></div>'
+        +'<div class="ac-actions">'+statusBadge(item)
+        +'<button class="icon-btn icon-btn-sm" onclick="openSheet(\''+item.id+'\')" aria-label="Options"><i class="ti ti-dots-vertical"></i></button></div></div>';
+    });
+    html+='</div>';
+  }
+
+  body.innerHTML=html;updateStats();
+}
+function openUrl(url){window.open(url,'_blank','noopener');}
+
+/* Connect panel */
+function openConnect(){
+  var base = window.location.href.split('?')[0];
+  var addUrl = base + '?add=';
+
+  // Populate all URL fields
+  var fields = ['ios-url-display','safari-iphone-url'];
+  fields.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.textContent = addUrl + '{CURRENT_PAGE_URL}';
+  });
+
+  if(cfg.zapierEmail){
+    var zi=document.getElementById('zapier-email-input');
+    var zd=document.getElementById('zapier-email-display');
+    var zs=document.getElementById('zapier-saved');
+    if(zi)zi.value=cfg.zapierEmail;
+    if(zd)zd.textContent=cfg.zapierEmail;
+    if(zs)zs.style.display='flex';
+  }
+  if(cfg.twitterToken){
+    var ti=document.getElementById('tw-token-input');
+    if(ti)ti.value=cfg.twitterToken;
+  }
+  showSafariTab('iphone');
+  document.getElementById('connect-bg').classList.add('open');
+}
+function closeConnect(){document.getElementById('connect-bg').classList.remove('open');}
+
+function showSafariTab(tab){
+  ['iphone','ipad','mac'].forEach(function(t){
+    var panel=document.getElementById('safari-'+t);
+    var btn=document.getElementById('stab-'+t);
+    if(panel) panel.style.display = t===tab ? '' : 'none';
+    if(btn){
+      btn.style.background = t===tab ? 'white' : 'transparent';
+      btn.style.color = t===tab ? 'var(--ink)' : 'var(--ink3)';
+      btn.style.fontWeight = t===tab ? '500' : 'normal';
+      btn.style.borderColor = t===tab ? '#006CFF' : 'var(--paper3)';
+    }
+  });
+}
+
+function genSafariBookmarklet(){
+  var base = window.location.href.split('?')[0];
+  var bm = "javascript:(function(){var u=encodeURIComponent(location.href);window.open('"+base+"?add='+u,'_blank','noopener');})();";
+  var el = document.getElementById('safari-mac-bm');
+  if(el) el.textContent = bm;
+  navigator.clipboard.writeText(bm).then(function(){ showToast('Bookmarklet copied!'); });
+}
+
+async function saveZapierEmail(){
+  var v=document.getElementById('zapier-email-input').value.trim();
+  if(!v){showToast('Enter your Zapier email address');return;}
+  cfg.zapierEmail=v;await persistCfg();
+  var zd=document.getElementById('zapier-email-display');
+  var zs=document.getElementById('zapier-saved');
+  if(zd)zd.textContent=v;if(zs)zs.style.display='flex';
+  showToast('Email address saved!');
+}
+
+/* ── Twitter/X Bookmarks ──────────────────── */
+async function saveTwitterToken(){
+  var t=document.getElementById('tw-token-input').value.trim();
+  if(!t){showToast('Paste your Bearer Token first');return;}
+  cfg.twitterToken=t;await persistCfg();
+  showToast('Token saved — will auto-import on open');
+}
+
+async function importTwitterBookmarks(){
+  var token=(document.getElementById('tw-token-input').value.trim())||cfg.twitterToken||'';
+  if(!token){showToast('Paste your Bearer Token first');return;}
+
+  var status=document.getElementById('tw-status');
+  if(status){status.style.display='block';status.textContent='Fetching your X bookmarks…';}
+
+  try{
+    // Step 1: get user id
+    var meResp=await fetch('https://api.twitter.com/2/users/me',{
+      headers:{Authorization:'Bearer '+token}
+    });
+    if(!meResp.ok)throw new Error('Auth failed — check your Bearer Token (HTTP '+meResp.status+')');
+    var me=await meResp.json();
+    var userId=me.data&&me.data.id;
+    if(!userId)throw new Error('Could not get user ID');
+
+    // Step 2: fetch bookmarks
+    var bmResp=await fetch(
+      'https://api.twitter.com/2/users/'+userId+'/bookmarks?max_results=100&tweet.fields=entities,text,created_at&expansions=attachments.media_keys',
+      {headers:{Authorization:'Bearer '+token}}
+    );
+    if(!bmResp.ok){
+      if(bmResp.status===403)throw new Error('Bookmarks require Basic (paid) API access. See note below.');
+      throw new Error('Bookmarks fetch failed (HTTP '+bmResp.status+')');
+    }
+    var bm=await bmResp.json();
+    var tweets=bm.data||[];
+    if(!tweets.length){if(status)status.textContent='No bookmarks found.';return;}
+
+    var added=0;
+    for(var t2=0;t2<tweets.length;t2++){
+      var tweet=tweets[t2];
+      // Extract URLs from entities
+      var urls=(tweet.entities&&tweet.entities.urls)||[];
+      for(var u=0;u<urls.length;u++){
+        var expanded=urls[u].expanded_url||urls[u].url||'';
+        // Skip t.co self-links and twitter/x.com links
+        if(!expanded||expanded.indexOf('twitter.com')!==-1||expanded.indexOf('x.com')!==-1||expanded.indexOf('t.co')!==-1)continue;
+        if(!items.find(function(i){return i.url===expanded;})){
+          await addLinkDirect(expanded);
+          added++;
+        }
+      }
+    }
+    cfg.twitterToken=token;await persistCfg();
+    if(status)status.textContent='Done! Added '+added+' new article'+(added!==1?'s':'')+' from your X bookmarks.';
+    showToast('Imported '+added+' articles from X');
+    if(added>0){closeConnect();render();}
+
+  }catch(err){
+    var msg=err.message||'Unknown error';
+    if(status){
+      status.style.display='block';
+      status.innerHTML=msg+(msg.indexOf('Basic')!==-1
+        ?'<br><br><span style="color:#8a8783;">X\'s Bookmarks API requires the Basic paid plan ($100/mo). '
+          +'Alternatively, use the <strong>browser export method</strong> below — copy bookmark URLs from x.com/i/bookmarks and paste them into the URL bar here.</span>'
+        :'');
+    }
+    showToast('X import failed');
+  }
+}
+function genBookmarklet(){
+  var base=window.location.href.split('?')[0];
+  var bm="javascript:(function(){var u=encodeURIComponent(location.href);window.open('"+base+"?add='+u,'_blank','noopener');})();";
+  var el=document.getElementById('bookmarklet-display');
+  if(el)el.textContent=bm;
+  navigator.clipboard.writeText(bm).then(function(){showToast('Bookmarklet copied!');});
+}
+function copyEl(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){showToast('Copied!');});
+}
+
+/* Article sheet */
+function openSheet(id){
+  sheetItemId=id;
+  var item=items.find(function(i){return i.id===id;});if(!item)return;
+  document.getElementById('sheet-title').textContent=item.title.length>50?item.title.slice(0,50)+'…':item.title;
+  var sl={unread:'Mark as reading',reading:'Mark as read',read:'Mark as unread'};
+  var openAction = item.isPdf
+    ? '<div class="sheet-item" onclick="sheetOpenPdf()"><i class="ti ti-file-type-pdf"></i>Open PDF</div>'
+    : '<div class="sheet-item" onclick="sheetCopy()"><i class="ti ti-copy"></i>Copy URL</div>';
+  var refreshAction = item.isPdf ? '' : '<div class="sheet-item" onclick="sheetRefresh()"><i class="ti ti-refresh"></i>Refresh preview</div>';
+  document.getElementById('sheet-items').innerHTML=
+    '<div class="sheet-item" onclick="sheetStatus()"><i class="ti ti-circle-check"></i>'+(sl[item.status]||'Change status')+'</div>'
+    +'<div class="sheet-item" onclick="sheetNote()"><i class="ti ti-note"></i>'+(item.note?'Edit note':'Add note')+'</div>'
+    +'<div class="sheet-item" onclick="sheetTag()"><i class="ti ti-tag"></i>Change tag ('+item.tag+')</div>'
+    +openAction+refreshAction
+    +'<div class="sheet-item danger" onclick="sheetDelete()"><i class="ti ti-trash"></i>Remove</div>';
+  document.getElementById('action-sheet').classList.add('open');
+}
+function closeSheet(){document.getElementById('action-sheet').classList.remove('open');}
+var STATUSES=['unread','reading','read'],TAGS=['article','research','tool','video','reference','news','pdf','other'];
+async function sheetStatus(){var id=sheetItemId;closeSheet();var idx=items.findIndex(function(i){return i.id===id;});if(idx===-1)return;items[idx].status=STATUSES[(STATUSES.indexOf(items[idx].status)+1)%STATUSES.length];await persist();render();}
+async function sheetTag(){var idx=items.findIndex(function(i){return i.id===sheetItemId;});if(idx===-1){closeSheet();return;}items[idx].tag=TAGS[(TAGS.indexOf(items[idx].tag)+1)%TAGS.length];await persist();var id=sheetItemId;closeSheet();setTimeout(function(){openSheet(id);},50);render();}
+function sheetNote(){var id=sheetItemId;closeSheet();openNoteSheet(id);}
+function sheetCopy(){var id=sheetItemId;closeSheet();var item=items.find(function(i){return i.id===id;});if(item&&!item.isPdf)navigator.clipboard.writeText(item.url).then(function(){showToast('URL copied');});}
+function sheetOpenPdf(){var id=sheetItemId;closeSheet();openPdf(id);}
+async function sheetRefresh(){var id=sheetItemId;closeSheet();var idx=items.findIndex(function(i){return i.id===id;});if(idx!==-1){items[idx].enriching=true;items[idx].image='';render();enrich(id);}}
+async function sheetDelete(){var id=sheetItemId;closeSheet();var item=items.find(function(i){return i.id===id;});if(item&&item.isPdf)await deletePdfData(id);items=items.filter(function(i){return i.id!==id;});await persist();render();updateStats();showToast('Removed');}
+
+function openNoteSheet(id){editingNoteId=id;var item=items.find(function(i){return i.id===id;});document.getElementById('note-input').value=item?item.note||'':'';document.getElementById('note-sheet').classList.add('open');setTimeout(function(){document.getElementById('note-input').focus();},350);}
+function closeNoteSheet(){document.getElementById('note-sheet').classList.remove('open');editingNoteId=null;}
+async function saveNote(){if(!editingNoteId)return;var idx=items.findIndex(function(i){return i.id===editingNoteId;});if(idx!==-1){items[idx].note=document.getElementById('note-input').value.trim();await persist();render();}closeNoteSheet();}
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escA(s){return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+
+/* ── Tab switching ────────────────────────── */
+function switchTab(tab) {
+  activeTab = tab;
+  ['list','nl','rec'].forEach(function(k){
+    var tb=document.getElementById('tab-'+k);
+    var sc=document.getElementById('section-'+k);
+    if(tb)tb.classList.toggle('active',k===tab);
+    if(sc)sc.classList.toggle('active',k===tab);
+  });
+  document.getElementById('list-filters').style.display = tab==='list' ? '' : 'none';
+  if(tab==='rec') renderRecs();
+  if(tab==='nl') renderNewsletters();
+}
+
+/* ── Recommendations ──────────────────────── */
+var recGenerating = false;
+
+function renderRecs() {
+  var body = document.getElementById('rec-body');
+  if(!body) return;
+
+  if(recGenerating) {
+    body.innerHTML = '<div class="rec-thinking"><div class="spin" style="font-size:28px;color:var(--ink3);"><i class="ti ti-sparkles"></i></div><p>Analysing your reading taste…</p></div>';
+    return;
+  }
+
+  if(!items.length) {
+    body.innerHTML = '<div class="rec-generate-area"><p>Add some articles to your list first, then come back here for personalised recommendations.</p></div>';
+    return;
+  }
+
+  if(!recData || !recData.recs || !recData.recs.length) {
+    body.innerHTML = '<div class="rec-generate-area">'
+      + '<p>Claude will analyse your reading list and suggest articles, newsletters, writers, and topics tailored to your taste.</p>'
+      + '<button class="rec-generate-btn" onclick="generateRecs()"><i class="ti ti-sparkles"></i> Generate recommendations</button>'
+      + '</div>';
+    return;
+  }
+
+  var ago = recData.generatedAt ? timeAgo(recData.generatedAt) : '';
+  var html = '';
+
+  if(recData.profile) {
+    html += '<div class="rec-profile"><div class="rec-refresh-row">'
+      + '<strong>Your reading profile</strong>'
+      + '<button class="rec-refresh-btn" onclick="generateRecs()"><i class="ti ti-refresh" style="font-size:12px;"></i> Refresh</button>'
+      + '</div>'
+      + esc(recData.profile)
+      + (ago ? '<div class="rec-timestamp" style="margin-top:.5rem;">Last updated '+ago+'</div>' : '')
+      + '</div>';
+  }
+
+  var ICONS = { article:'ti-article', research:'ti-microscope', newsletter:'ti-mail', book:'ti-book', podcast:'ti-microphone', video:'ti-player-play', topic:'ti-tag', author:'ti-user', tool:'ti-tool', other:'ti-bookmark' };
+
+  recData.recs.forEach(function(rec, i) {
+    var icon = ICONS[rec.type] || 'ti-bookmark';
+    var searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(rec.title + ' ' + (rec.source||''));
+    html += '<div class="rec-card">'
+      + '<div class="rec-icon"><i class="ti ' + icon + '"></i></div>'
+      + '<div class="rec-body">'
+      + '<div class="rec-why">' + esc(rec.why||rec.type||'Recommended') + '</div>'
+      + '<div class="rec-title">' + esc(rec.title) + '</div>'
+      + '<div class="rec-desc">' + esc(rec.description) + '</div>'
+      + '<div class="rec-meta">'
+      + (rec.source ? '<span class="rec-source">'+esc(rec.source)+'</span>' : '')
+      + '<a href="' + searchUrl + '" target="_blank" rel="noopener" class="rec-search-btn"><i class="ti ti-search" style="font-size:11px;"></i> Find it</a>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+
+  body.innerHTML = html;
+}
+
+async function generateRecs() {
+  if(recGenerating) return;
+  if(items.length < 1) { showToast('Add some articles first'); return; }
+
+  recGenerating = true;
+  renderRecs();
+
+  // Build a compact reading list summary for the prompt
+  var readItems = items.filter(function(i){ return i.status==='read'; }).slice(0,20);
+  var allItems = items.slice(0,30);
+  var summary = allItems.map(function(i){
+    return '- "'+i.title+'" ['+i.tag+'] '+(i.domain&&!i.isPdf?'('+i.domain+')':'')+(i.status==='read'?' [read]':'');
+  }).join('\n');
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1200,
+        system:'You are a brilliant literary and editorial advisor. Analyse a reading list and produce highly personalised recommendations. Use web_search to find real, currently active sources. Respond ONLY with valid raw JSON — no markdown, no fences, no explanation.',
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:
+          'Here is my reading list:\n\n'+summary+'\n\n'
+          +'Based on this, please:\n'
+          +'1. Write a 2-sentence "reading profile" describing my interests and taste\n'
+          +'2. Generate 8 highly specific recommendations — a mix of articles, newsletters, authors, podcasts, and topics I should explore\n\n'
+          +'For each recommendation, search the web to find real current sources.\n\n'
+          +'Return this exact JSON:\n'
+          +'{\n'
+          +'  "profile": "2-sentence description of my reading taste",\n'
+          +'  "recs": [\n'
+          +'    {\n'
+          +'      "title": "specific title, name, or topic",\n'
+          +'      "type": "article|newsletter|author|podcast|book|topic|tool",\n'
+          +'      "description": "1-2 sentences on what it is and why I would love it, max 140 chars",\n'
+          +'      "source": "publication, platform, or where to find it",\n'
+          +'      "why": "2-4 word reason connecting to my list"\n'
+          +'    }\n'
+          +'  ]\n'
+          +'}'
+        }]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var match = text.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('no json');
+    var parsed = JSON.parse(match[0]);
+    if(!parsed.recs || !parsed.recs.length) throw new Error('no recs');
+    recData = { recs: parsed.recs, profile: parsed.profile||'', generatedAt: Date.now() };
+    try { await window.storage.set(REC_KEY, JSON.stringify(recData)); } catch(e) {}
+  } catch(e) {
+    showToast('Could not generate recommendations');
+    recData = recData || null;
+  }
+
+  recGenerating = false;
+  renderRecs();
+}
+
+function timeAgo(ts) {
+  var diff = Math.floor((Date.now() - ts) / 1000);
+  if(diff < 60) return 'just now';
+  if(diff < 3600) return Math.floor(diff/60)+'m ago';
+  if(diff < 86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+/* ── Newsletter Engine ────────────────────── */
+var NL_KEY = 'reader_newsletters_v1';
+var nlSources = []; // [{id, name, url, rssUrl, favicon, lastSync, articleCount, type}]
+var nlSyncing = false;
+
+var NL_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+// Well-known newsletter RSS patterns
+function guessRssUrl(input) {
+  input = input.trim().replace(/\/$/, '');
+  // Already an RSS/Atom URL
+  if (input.match(/\.(xml|rss|atom)(\?|$)/i) || input.includes('/feed') || input.includes('/rss')) return input;
+  try {
+    var u = new URL(input.startsWith('http') ? input : 'https://' + input);
+    var host = u.hostname.replace('www.', '');
+    // Substack
+    if (host.endsWith('.substack.com') || input.includes('substack.com')) return u.origin + '/feed';
+    // Ghost (e.g. ghost.io or custom domains with /ghost/)
+    if (input.includes('ghost.io')) return u.origin + '/rss/';
+    // Medium
+    if (host === 'medium.com' || host.endsWith('.medium.com')) return u.origin + '/feed';
+    if (host === 'medium.com' && u.pathname.startsWith('/@')) return 'https://medium.com/feed/' + u.pathname.slice(1);
+    // Beehiiv
+    if (host.endsWith('.beehiiv.com')) return u.origin + '/feed';
+    // Buttondown
+    if (host.endsWith('.buttondown.email') || host === 'buttondown.email') return u.origin + '/rss';
+    // Kill the Newsletter (already RSS)
+    if (host === 'kill-the-newsletter.com') return input;
+    // Mailchimp / ConvertKit / generic — try /feed and /rss
+    return u.origin + '/feed';
+  } catch(e) { return input; }
+}
+
+async function resolveNewsletterMeta(rssUrl, originalInput) {
+  // Use rss2json free API as CORS proxy + parser
+  try {
+    var resp = await fetch(NL_PROXY + encodeURIComponent(rssUrl) + '&count=1');
+    var d = await resp.json();
+    if (d.status === 'ok' && d.feed) {
+      return {
+        name: d.feed.title || getDomain(originalInput),
+        favicon: d.feed.image || getFavicon(originalInput),
+        description: d.feed.description || '',
+        rssUrl: rssUrl,
+        confirmed: true
+      };
+    }
+  } catch(e) {}
+  return { name: getDomain(originalInput), favicon: getFavicon(originalInput), rssUrl: rssUrl, confirmed: false };
+}
+
+async function addNewsletterSource(input) {
+  if (!input) return;
+  input = input.trim();
+  if (!input.startsWith('http')) input = 'https://' + input;
+
+  var rssUrl = guessRssUrl(input);
+  showNlStatus('Verifying feed…');
+
+  var meta = await resolveNewsletterMeta(rssUrl, input);
+  if (!meta.confirmed) {
+    // Try alternate patterns
+    var alts = [input + '/rss', input + '/feed', input + '/rss.xml', input + '/atom.xml'];
+    for (var a = 0; a < alts.length; a++) {
+      try {
+        var tr = await fetch(NL_PROXY + encodeURIComponent(alts[a]) + '&count=1');
+        var td = await tr.json();
+        if (td.status === 'ok' && td.feed && td.feed.title) {
+          rssUrl = alts[a];
+          meta = { name: td.feed.title, favicon: td.feed.image || getFavicon(input), rssUrl: rssUrl, confirmed: true };
+          break;
+        }
+      } catch(e) {}
+    }
+  }
+
+  if (!meta.confirmed) {
+    showNlStatus('Could not find RSS feed. Try pasting the direct RSS URL.');
+    showToast('Feed not found — try the RSS URL directly');
+    return;
+  }
+
+  // Deduplicate
+  if (nlSources.find(function(s){ return s.rssUrl === rssUrl; })) {
+    showToast('Already subscribed'); showNlStatus(''); return;
+  }
+
+  var source = {
+    id: uid(), name: meta.name, rssUrl: rssUrl,
+    favicon: meta.favicon || '', originalUrl: input,
+    lastSync: null, articleCount: 0, type: 'rss'
+  };
+  nlSources.push(source);
+  await persistNl();
+  renderNewsletters();
+  showNlStatus('Added! Fetching articles…');
+  await syncSource(source.id);
+  showNlStatus('');
+  showToast('Newsletter added');
+}
+
+async function syncSource(sourceId) {
+  var src = nlSources.find(function(s){ return s.id === sourceId; });
+  if (!src) return 0;
+  var added = 0;
+  try {
+    var resp = await fetch(NL_PROXY + encodeURIComponent(src.rssUrl) + '&count=50&order_by=pubDate&order_dir=desc');
+    var d = await resp.json();
+    if (d.status !== 'ok') throw new Error('RSS error');
+    var feedItems = d.items || [];
+    for (var i = 0; i < feedItems.length; i++) {
+      var fi = feedItems[i];
+      var url = fi.link || fi.guid || '';
+      if (!url || url.startsWith('mailto:')) continue;
+      if (items.find(function(x){ return x.url === url; })) continue;
+      var item = {
+        id: uid(), url: url,
+        title: (fi.title || slugToTitle(url)).trim(),
+        description: stripHtml(fi.description || fi.content || '').slice(0, 160),
+        domain: getDomain(url),
+        tag: 'newsletter',
+        status: 'unread',
+        note: '', savedAt: fi.pubDate ? new Date(fi.pubDate).getTime() : Date.now(),
+        image: extractFirstImg(fi.content || fi.description || '') || (fi.thumbnail || ''),
+        enriched: true, enriching: false,
+        sourceId: src.id, sourceName: src.name
+      };
+      items.unshift(item);
+      added++;
+    }
+    // Sort by date after bulk insert
+    items.sort(function(a,b){ return b.savedAt - a.savedAt; });
+    var idx = nlSources.findIndex(function(s){ return s.id === sourceId; });
+    if (idx !== -1) {
+      nlSources[idx].lastSync = Date.now();
+      nlSources[idx].articleCount = (nlSources[idx].articleCount || 0) + added;
+    }
+    if (added > 0) { await persist(); await persistNl(); render(); updateStats(); }
+    else await persistNl();
+  } catch(e) { console.warn('Sync failed for', src.name, e); }
+  return added;
+}
+
+async function syncAllNewsletters(showFeedback) {
+  if (!nlSources.length) return;
+  nlSyncing = true;
+  renderNewsletters();
+  var total = 0;
+  for (var i = 0; i < nlSources.length; i++) {
+    total += await syncSource(nlSources[i].id);
+  }
+  nlSyncing = false;
+  renderNewsletters();
+  if (showFeedback) showToast(total > 0 ? 'Fetched '+total+' new articles' : 'All up to date');
+}
+
+async function removeNewsletterSource(sourceId) {
+  nlSources = nlSources.filter(function(s){ return s.id !== sourceId; });
+  await persistNl();
+  renderNewsletters();
+  showToast('Newsletter removed');
+}
+
+async function persistNl() {
+  try { await window.storage.set(NL_KEY, JSON.stringify(nlSources)); } catch(e) {}
+}
+
+function stripHtml(html) {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function extractFirstImg(html) {
+  var m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return m ? m[1] : '';
+}
+
+function showNlStatus(msg) {
+  var el = document.getElementById('nl-sync-status');
+  if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+}
+
+function renderNewsletters() {
+  var body = document.getElementById('nl-body');
+  if (!body) return;
+
+  var addRow = '<div class="nl-add-row">'
+    + '<input type="url" class="nl-input" id="nl-url-input" placeholder="Newsletter URL or RSS feed…" autocorrect="off" autocapitalize="off"/>'
+    + '<button class="nl-add-btn" onclick="nlAddFromInput()" aria-label="Add newsletter"><i class="ti ti-plus"></i></button>'
+    + '</div>';
+
+  var hint = '<div class="nl-hint"><strong>Works with:</strong> Substack, Ghost, Beehiiv, Buttondown, Medium, and any RSS feed. '
+    + 'For email newsletters without RSS, use <a href="https://kill-the-newsletter.com" target="_blank" style="color:var(--accent2);">Kill the Newsletter</a> — '
+    + 'it gives you an RSS URL you can paste here. Your token: <code>killthens.com/…</code></div>';
+
+  var syncRow = '<div class="nl-header-row">'
+    + '<h3>Newsletters</h3>'
+    + '<button class="nl-sync-btn'+(nlSyncing?' syncing':'')+'" onclick="syncAllNewsletters(true)">'
+    + (nlSyncing?'<span class="spin"><i class="ti ti-loader" style="font-size:12px;"></i></span> Syncing…':'<i class="ti ti-refresh" style="font-size:13px;"></i> Sync all')
+    + '</button></div>';
+
+  var statusEl = '<div class="nl-sync-status" id="nl-sync-status" style="display:none;"></div>';
+
+  if (!nlSources.length) {
+    body.innerHTML = syncRow + addRow + hint + statusEl
+      + '<div class="nl-empty"><i class="ti ti-mail"></i><p>No newsletters yet.</p><small>Paste a Substack, Ghost, or RSS URL above.</small></div>';
+    document.getElementById('nl-url-input').addEventListener('keydown', function(e){ if(e.key==='Enter') nlAddFromInput(); });
+    return;
+  }
+
+  var lastSyncTime = Math.max.apply(null, nlSources.map(function(s){ return s.lastSync || 0; }));
+  var syncLabel = lastSyncTime ? 'Last synced ' + timeAgo(lastSyncTime) : 'Never synced';
+
+  var sourcesList = nlSources.map(function(src) {
+    var icon = src.favicon
+      ? '<img src="'+esc(src.favicon)+'" onerror="this.style.display=\'none\'" alt="">'
+      : '<i class="ti ti-mail"></i>';
+    var count = src.articleCount ? src.articleCount+' articles' : 'No articles yet';
+    var synced = src.lastSync ? timeAgo(src.lastSync) : 'Not yet synced';
+    return '<div class="nl-source">'
+      + '<div class="nl-source-icon">'+icon+'</div>'
+      + '<div class="nl-source-body">'
+      + '<div class="nl-source-name">'+esc(src.name)+'</div>'
+      + '<div class="nl-source-meta">'+count+' · '+synced+'</div>'
+      + '</div>'
+      + '<div class="nl-source-actions">'
+      + '<button class="nl-source-btn" onclick="syncSource(\''+src.id+'\').then(function(n){showToast(n+\' new articles\');renderNewsletters();})"><i class="ti ti-refresh" style="font-size:11px;"></i></button>'
+      + '<button class="nl-source-btn del" onclick="removeNewsletterSource(\''+src.id+'\')"><i class="ti ti-trash" style="font-size:11px;"></i></button>'
+      + '</div></div>';
+  }).join('');
+
+  body.innerHTML = syncRow + addRow + hint + statusEl
+    + '<div style="margin-bottom:.5rem;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:.25rem;">'+syncLabel+'</div>'
+    + sourcesList + '</div>';
+
+  var inp = document.getElementById('nl-url-input');
+  if (inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter') nlAddFromInput(); });
+}
+
+function nlAddFromInput() {
+  var v = (document.getElementById('nl-url-input').value || '').trim();
+  if (!v) return;
+  document.getElementById('nl-url-input').value = '';
+  addNewsletterSource(v);
+}
+
+load();
+
+/* ── PDF Support ───────────────────────────────────────────── */
+
+var PDF_STORAGE_PREFIX = 'reader_pdf_';
+var currentPdfId = null;
+
+async function handlePdfUpload(input) {
+  var file = input.files && input.files[0];
+  input.value = '';
+  if (!file || file.type !== 'application/pdf') { showToast('Please select a PDF file'); return; }
+  if (file.size > 4.5 * 1024 * 1024) { showToast('PDF too large — max 4.5 MB'); return; }
+
+  showToast('Reading PDF…');
+  var base64 = await fileToBase64(file);
+  var sizeLabel = formatBytes(file.size);
+  var fileName = file.name.replace(/\.pdf$/i, '');
+
+  var item = {
+    id: uid(), url: '', title: fileName, description: '', domain: 'PDF Document',
+    tag: 'pdf', status: 'unread', note: '', savedAt: Date.now(),
+    image: '', enriched: false, enriching: true,
+    isPdf: true, pdfName: file.name, pdfSize: sizeLabel
+  };
+  items.unshift(item);
+  await persist();
+  render(); updateStats();
+  showToast('PDF saved — extracting title…');
+
+  // Store PDF data separately (large binary)
+  try { await window.storage.set(PDF_STORAGE_PREFIX + item.id, base64); } catch(e) { showToast('PDF too large to store'); }
+
+  // Extract title + summary via Claude
+  enrichPdf(item.id, base64, fileName);
+}
+
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var r = new FileReader();
+    r.onload = function() { resolve(r.result.split(',')[1]); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function enrichPdf(id, base64, fallbackTitle) {
+  var title = '', description = '';
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 400,
+        system: 'Extract metadata from this PDF. Respond ONLY with raw JSON, no markdown: {"title":"the real document title, max 80 chars","description":"1-2 sentence summary of what this document is about, max 160 chars","tag":"research|article|reference|other"}',
+        messages: [{ role: 'user', content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+          { type: 'text', text: 'Extract the title and a brief description from this PDF.' }
+        ]}]
+      })
+    });
+    var data = await resp.json();
+    for (var b = 0; b < (data.content || []).length; b++) {
+      var block = data.content[b];
+      if (block.type === 'text' && block.text) {
+        var m = block.text.match(/\{[\s\S]*?\}/);
+        if (m) { try { var p = JSON.parse(m[0]); title = p.title || ''; description = p.description || ''; } catch(e) {} }
+      }
+    }
+  } catch(e) {}
+
+  var idx = items.findIndex(function(i) { return i.id === id; });
+  if (idx !== -1) {
+    items[idx].title = (title && title.length > 2) ? title : fallbackTitle;
+    items[idx].description = description || '';
+    items[idx].enriched = true; items[idx].enriching = false;
+    await persist(); render();
+  }
+}
+
+async function openPdf(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (!item) return;
+  showToast('Loading PDF…');
+  try {
+    var r = await window.storage.get(PDF_STORAGE_PREFIX + id);
+    if (!r || !r.value) { showToast('PDF data not found'); return; }
+    var dataUrl = 'data:application/pdf;base64,' + r.value;
+    currentPdfId = id;
+    document.getElementById('pdf-viewer-title').textContent = item.title;
+    var frame = document.getElementById('pdf-viewer-frame');
+    // Try embed first; fallback message for iOS Safari which blocks blob PDFs
+    var isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIos) {
+      // iOS Safari: open in new tab via object URL
+      var bytes = base64ToBytes(r.value);
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+      var url = URL.createObjectURL(blob);
+      frame.innerHTML = '<div class="pdf-embed-fallback"><i class="ti ti-file-type-pdf"></i><p>Tap below to open the PDF in Safari</p><a href="' + url + '" target="_blank" style="background:var(--accent);color:white;padding:12px 24px;border-radius:8px;font-size:15px;text-decoration:none;">Open PDF</a></div>';
+    } else {
+      frame.innerHTML = '<iframe src="' + dataUrl + '" title="' + esc(item.title) + '"></iframe>';
+    }
+    document.getElementById('pdf-viewer').classList.add('open');
+  } catch(e) { showToast('Could not load PDF'); }
+}
+
+function base64ToBytes(b64) {
+  var binary = atob(b64), len = binary.length;
+  var bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function closePdfViewer() {
+  document.getElementById('pdf-viewer').classList.remove('open');
+  document.getElementById('pdf-viewer-frame').innerHTML = '';
+  currentPdfId = null;
+}
+
+async function downloadCurrentPdf() {
+  if (!currentPdfId) return;
+  var item = items.find(function(i) { return i.id === currentPdfId; });
+  try {
+    var r = await window.storage.get(PDF_STORAGE_PREFIX + currentPdfId);
+    if (!r) return;
+    var bytes = base64ToBytes(r.value);
+    var blob = new Blob([bytes], { type: 'application/pdf' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = (item ? item.pdfName : 'document.pdf');
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  } catch(e) { showToast('Could not download'); }
+}
+
+async function deletePdfData(id) {
+  try { await window.storage.delete(PDF_STORAGE_PREFIX + id); } catch(e) {}
+}
+
+</script>
+</body>
+</html>
