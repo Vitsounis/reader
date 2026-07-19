@@ -613,6 +613,7 @@ async function load(){
   try{var rc=await window.storage.get(REC_KEY);if(rc&&rc.value)recData=JSON.parse(rc.value);}catch(e){}
   try{var ns=await window.storage.get(NL_KEY);if(ns&&ns.value)nlSources=JSON.parse(ns.value);}catch(e){}
   checkUrlParam();
+  startBroadcastReceiver();
   render();updateStats();
   if(activeTab==='rec')renderRecs();
   if(activeTab==='nl')renderNewsletters();
@@ -626,6 +627,23 @@ function checkUrlParam(){
       window.history.replaceState({},'',window.location.pathname);
       addLinkDirect(addUrl);
     }
+  }catch(e){}
+}
+
+// BroadcastChannel receiver — lets the bookmarklet send URLs
+// to this already-open tab without opening a new one
+function startBroadcastReceiver(){
+  try{
+    var ch=new BroadcastChannel('reader_add_url');
+    ch.onmessage=function(e){
+      if(e.data&&e.data.url&&e.data.url.startsWith('http')){
+        addLinkDirect(e.data.url);
+        // Flash the tab title briefly so user knows it worked
+        var orig=document.title;
+        document.title='✓ Saved!';
+        setTimeout(function(){document.title=orig;},2000);
+      }
+    };
   }catch(e){}
 }
 async function persist(){
