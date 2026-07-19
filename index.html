@@ -582,6 +582,27 @@ a:hover{text-decoration:underline;}
 </div>
 
 <script>
+/* ── Storage: localStorage wrapper ───────────────────────────
+   Replaces window.storage (Claude-only) with localStorage so
+   the app works on GitHub Pages and persists across sessions.  */
+var store={
+  get:function(key){
+    try{var v=localStorage.getItem(key);return v?{value:v}:null;}catch(e){return null;}
+  },
+  set:function(key,value){
+    try{localStorage.setItem(key,value);return true;}catch(e){
+      /* localStorage full — try clearing old PDF data */
+      try{
+        for(var k in localStorage){if(k.startsWith('reader_pdf_'))localStorage.removeItem(k);}
+        localStorage.setItem(key,value);return true;
+      }catch(e2){return null;}
+    }
+  },
+  del:function(key){
+    try{localStorage.removeItem(key);return true;}catch(e){return null;}
+  }
+};
+
 var STORAGE_KEY='reader_v3';
 var CONFIG_KEY='reader_config_v1';
 var REC_KEY='reader_recs_v1';
@@ -608,10 +629,10 @@ function slugToTitle(url){
 }
 
 async function load(){
-  try{var r=await window.storage.get(STORAGE_KEY);if(r&&r.value)items=JSON.parse(r.value);}catch(e){items=[];}
-  try{var c=await window.storage.get(CONFIG_KEY);if(c&&c.value)cfg=Object.assign(cfg,JSON.parse(c.value));}catch(e){}
-  try{var rc=await window.storage.get(REC_KEY);if(rc&&rc.value)recData=JSON.parse(rc.value);}catch(e){}
-  try{var ns=await window.storage.get(NL_KEY);if(ns&&ns.value)nlSources=JSON.parse(ns.value);}catch(e){}
+  try{var r=store.get(STORAGE_KEY);if(r&&r.value)items=JSON.parse(r.value);}catch(e){items=[];}
+  try{var c=store.get(CONFIG_KEY);if(c&&c.value)cfg=Object.assign(cfg,JSON.parse(c.value));}catch(e){}
+  try{var rc=store.get(REC_KEY);if(rc&&rc.value)recData=JSON.parse(rc.value);}catch(e){}
+  try{var ns=store.get(NL_KEY);if(ns&&ns.value)nlSources=JSON.parse(ns.value);}catch(e){}
   checkUrlParam();
   startBroadcastReceiver();
   render();updateStats();
@@ -648,11 +669,11 @@ function startBroadcastReceiver(){
 }
 async function persist(){
   setSaving(true);
-  try{await window.storage.set(STORAGE_KEY,JSON.stringify(items));}catch(e){}
+  try{store.set(STORAGE_KEY,JSON.stringify(items));}catch(e){}
   setSaving(false);
 }
 async function persistCfg(){
-  try{await window.storage.set(CONFIG_KEY,JSON.stringify(cfg));}catch(e){}
+  try{store.set(CONFIG_KEY,JSON.stringify(cfg));}catch(e){}
 }
 function setSaving(v){
   document.getElementById('save-dot').classList.toggle('active',v);
@@ -1113,7 +1134,7 @@ async function generateRecs() {
     var parsed = JSON.parse(match[0]);
     if(!parsed.recs || !parsed.recs.length) throw new Error('no recs');
     recData = { recs: parsed.recs, profile: parsed.profile||'', generatedAt: Date.now() };
-    try { await window.storage.set(REC_KEY, JSON.stringify(recData)); } catch(e) {}
+    try { store.set(REC_KEY, JSON.stringify(recData)); } catch(e) {}
   } catch(e) {
     showToast('Could not generate recommendations');
     recData = recData || null;
@@ -1295,7 +1316,7 @@ async function removeNewsletterSource(sourceId) {
 }
 
 async function persistNl() {
-  try { await window.storage.set(NL_KEY, JSON.stringify(nlSources)); } catch(e) {}
+  try { store.set(NL_KEY, JSON.stringify(nlSources)); } catch(e) {}
 }
 
 function stripHtml(html) {
@@ -1405,7 +1426,7 @@ async function handlePdfUpload(input) {
   showToast('PDF saved — extracting title…');
 
   // Store PDF data separately (large binary)
-  try { await window.storage.set(PDF_STORAGE_PREFIX + item.id, base64); } catch(e) { showToast('PDF too large to store'); }
+  try { store.set(PDF_STORAGE_PREFIX + item.id, base64); } catch(e) { showToast('PDF too large to store'); }
 
   // Extract title + summary via Claude
   enrichPdf(item.id, base64, fileName);
@@ -1464,7 +1485,7 @@ async function openPdf(id) {
   if (!item) return;
   showToast('Loading PDF…');
   try {
-    var r = await window.storage.get(PDF_STORAGE_PREFIX + id);
+    var r = store.get(PDF_STORAGE_PREFIX + id);
     if (!r || !r.value) { showToast('PDF data not found'); return; }
     var dataUrl = 'data:application/pdf;base64,' + r.value;
     currentPdfId = id;
@@ -1502,7 +1523,7 @@ async function downloadCurrentPdf() {
   if (!currentPdfId) return;
   var item = items.find(function(i) { return i.id === currentPdfId; });
   try {
-    var r = await window.storage.get(PDF_STORAGE_PREFIX + currentPdfId);
+    var r = store.get(PDF_STORAGE_PREFIX + currentPdfId);
     if (!r) return;
     var bytes = base64ToBytes(r.value);
     var blob = new Blob([bytes], { type: 'application/pdf' });
@@ -1516,7 +1537,7 @@ async function downloadCurrentPdf() {
 }
 
 async function deletePdfData(id) {
-  try { await window.storage.delete(PDF_STORAGE_PREFIX + id); } catch(e) {}
+  try { store.del(PDF_STORAGE_PREFIX + id); } catch(e) {}
 }
 
 </script>
